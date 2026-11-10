@@ -6,7 +6,8 @@
   "scripts": {
     "test": "vitest run",
     "dev": "tsx src/index.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "mcp:branches": "tsx src/mcp/branches-stdio.ts"
   },
   "repository": {
     "type": "git",
