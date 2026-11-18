@@ -5,7 +5,9 @@ import * as z from "zod/v4";
 import {
   getTicket,
   listTickets,
+  ticketStatuses,
 } from "../domain/tickets.js";
+import { jsonToolResult, toolError } from "./tool-result.js";
 
 export function createTicketsServer(): McpServer {
   const server = new McpServer({
@@ -19,19 +21,10 @@ export function createTicketsServer(): McpServer {
       description:
         "Lista chamados fictícios, com filtro opcional por status.",
       inputSchema: z.strictObject({
-        status: z
-          .enum(["open", "in_progress", "resolved"])
-          .optional(),
+        status: z.enum(ticketStatuses).optional(),
       }),
     },
-    async ({ status }) => ({
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(listTickets(status), null, 2),
-        },
-      ],
-    }),
+    ({ status }) => jsonToolResult(listTickets(status)),
   );
 
   server.registerTool(
@@ -43,29 +36,14 @@ export function createTicketsServer(): McpServer {
         id: z.string().regex(/^CH-\d{3}$/),
       }),
     },
-    async ({ id }) => {
+    ({ id }) => {
       const ticket = getTicket(id);
 
       if (!ticket) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Chamado ${id} não encontrado.`,
-            },
-          ],
-        };
+        return toolError(`Chamado ${id} não encontrado.`);
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(ticket, null, 2),
-          },
-        ],
-      };
+      return jsonToolResult(ticket);
     },
   );
 

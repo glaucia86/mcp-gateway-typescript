@@ -7,6 +7,7 @@ import {
   listBranches,
   listCities,
 } from "../domain/branches.js";
+import { jsonToolResult, toolError } from "./tool-result.js";
 
 export function createBranchesServer(): McpServer {
   const server = new McpServer({
@@ -14,7 +15,6 @@ export function createBranchesServer(): McpServer {
     version: "0.1.0",
   });
 
-  // Tool 1: listar agências
   server.registerTool(
     "list_branches",
     {
@@ -29,17 +29,9 @@ export function createBranchesServer(): McpServer {
           .describe("Ex.: Rio de Janeiro"),
       }),
     },
-    async ({ city }) => ({
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(listBranches(city), null, 2),
-        },
-      ],
-    }),
+    ({ city }) => jsonToolResult(listBranches(city)),
   );
 
-  // Tool 2: consultar agência
   server.registerTool(
     "get_branch",
     {
@@ -52,33 +44,17 @@ export function createBranchesServer(): McpServer {
           .describe("Ex.: AG-001"),
       }),
     },
-    async ({ id }) => {
+    ({ id }) => {
       const branch = getBranch(id);
 
       if (!branch) {
-        return {
-          isError: true,
-          content: [
-            {
-              type: "text",
-              text: `Agência ${id} não encontrada.`,
-            },
-          ],
-        };
+        return toolError(`Agência ${id} não encontrada.`);
       }
 
-      return {
-        content: [
-          {
-            type: "text",
-            text: JSON.stringify(branch, null, 2),
-          },
-        ],
-      };
+      return jsonToolResult(branch);
     },
   );
 
-  // Tool 3: listar cidades
   server.registerTool(
     "list_cities",
     {
@@ -86,14 +62,7 @@ export function createBranchesServer(): McpServer {
         "Lista cidades fictícias com agências cadastradas.",
       inputSchema: z.strictObject({}),
     },
-    async () => ({
-      content: [
-        {
-          type: "text",
-          text: JSON.stringify(listCities(), null, 2),
-        },
-      ],
-    }),
+    () => jsonToolResult(listCities()),
   );
 
   return server;

@@ -1,5 +1,6 @@
 
-export type TicketStatus = "open" | "in_progress" | "resolved";
+export const ticketStatuses = ["open", "in_progress", "resolved"] as const;
+export type TicketStatus = (typeof ticketStatuses)[number];
 
 export interface Ticket {
   id: string;
@@ -26,11 +27,12 @@ const tickets: readonly Ticket[] = [
 ];
 
 export function listTickets(status?: TicketStatus): Ticket[] {
-  return tickets.filter(
-    (ticket) => !status || ticket.status === status,
-  );
+  return tickets
+    .filter((ticket) => !status || ticket.status === status)
+    .map((ticket) => ({ ...ticket }));
 }
 
 export function getTicket(id: string): Ticket | undefined {
-  return tickets.find((ticket) => ticket.id === id);
+  const ticket = tickets.find((ticket) => ticket.id === id);
+  return ticket ? { ...ticket } : undefined;
 }
