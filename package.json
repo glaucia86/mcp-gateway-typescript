@@ -7,7 +7,9 @@
     "test": "vitest run",
     "dev": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
-    "mcp:branches": "tsx src/mcp/branches-stdio.ts"
+    "mcp:branches": "tsx src/mcp/branches-stdio.ts",
+    "mcp:tickets": "tsx src/mcp/tickets-stdio.ts",
+    "mcp:demo": "tsx src/client/demo.ts"
   },
   "repository": {
     "type": "git",
