@@ -1,11 +1,10 @@
-
 {
   "version": 1,
   "servers": [
     {
       "id": "branches",
       "owner": "team-branches",
-      "enabled": false,
+      "enabled": true,
       "tools": [
         {
           "name": "list_branches",
@@ -21,11 +20,29 @@
           "name": "get_branch",
           "owner": "team-branches",
           "riskLevel": 0,
-          "enabled": false,
-          "approvedBy": null,
-          "approvedAt": null,
-          "approvedHash": null,
-          "approvedDefinition": null
+          "enabled": true,
+          "approvedBy": "team-branches",
+          "approvedAt": "2026-11-23T17:54:13.193Z",
+          "approvedHash": "fbed09c4af9b2eb2c907d706e64883b1f058d8e943bb29754f449a3ef648dc3e",
+          "approvedDefinition": {
+            "name": "get_branch",
+            "description": "Consulta uma agência fictícia pelo identificador AG-000.",
+            "inputSchema": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "pattern": "^AG-\\d{3}$",
+                  "description": "Ex.: AG-001"
+                }
+              },
+              "required": [
+                "id"
+              ],
+              "$schema": "https://json-schema.org/draft/2020-12/schema",
+              "additionalProperties": false
+            }
+          }
         },
         {
           "name": "list_cities",

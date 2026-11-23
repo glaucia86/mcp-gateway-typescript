@@ -11,7 +11,10 @@
     "mcp:tickets": "tsx src/mcp/tickets-stdio.ts",
     "mcp:demo": "tsx src/client/demo.ts",
     "registry": "tsx src/registry/cli.ts",
-    "registry:validate": "tsx src/registry/validate-registry.ts"
+    "registry:validate": "tsx src/registry/validate-registry.ts",
+    "registry:fingerprints": "tsx src/registry/discover-fingerprints.ts",
+    "registry:approve-live": "tsx src/registry/approve-live.ts",
+    "registry:verify-live": "tsx src/registry/verify-live.ts"
   },
   "repository": {
     "type": "git",
