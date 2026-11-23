@@ -50,9 +50,50 @@ const ServerSchema = z.strictObject({
   tools: z.array(ToolSchema).min(1),
 });
 
-export const RegistrySchema = z.strictObject({
-  version: z.literal(1),
-  servers: z.array(ServerSchema).min(1),
-});
+export const RegistrySchema = z
+  .strictObject({
+    version: z.literal(1),
+    servers: z.array(ServerSchema).min(1),
+  })
+  .superRefine((registry, ctx) => {
+    // IDs dos servidores já encontrados
+    const serverIds = new Set<string>();
+
+    registry.servers.forEach((server, serverIndex) => {
+      // Regra 1: não permitir IDs duplicados
+      if (serverIds.has(server.id)) {
+        ctx.addIssue({
+          code: "custom",
+          message: `ID de servidor duplicado: ${server.id}`,
+          path: ["servers", serverIndex, "id"],
+        });
+      } else {
+        serverIds.add(server.id);
+      }
+
+      // Cada servidor possui seu próprio conjunto de nomes
+      const toolNames = new Set<string>();
+
+      server.tools.forEach((tool, toolIndex) => {
+        // Regra 2: nomes únicos dentro de um servidor
+        if (toolNames.has(tool.name)) {
+          ctx.addIssue({
+            code: "custom",
+            message:
+              `Ferramenta duplicada no servidor ${server.id}: ${tool.name}`,
+            path: [
+              "servers",
+              serverIndex,
+              "tools",
+              toolIndex,
+              "name",
+            ],
+          });
+        } else {
+          toolNames.add(tool.name);
+        }
+      });
+    });
+  });
 
 export type Registry = z.infer<typeof RegistrySchema>;
