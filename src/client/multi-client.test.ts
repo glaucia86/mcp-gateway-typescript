@@ -44,13 +44,23 @@ describe("Conexões MCP por stdio", () => {
         expect(branchResult.isError).not.toBe(true);
         expect(ticketResult.isError).not.toBe(true);
 
-        expect(JSON.stringify(branchResult.content)).toContain(
-          "AG-001",
-        );
+        const [branchContent] = branchResult.content;
+        const [ticketContent] = ticketResult.content;
+        if (branchContent?.type !== "text" || ticketContent?.type !== "text") {
+          throw new Error("As ferramentas devem retornar um bloco de texto JSON.");
+        }
 
-        expect(JSON.stringify(ticketResult.content)).toContain(
-          "CH-001",
-        );
+        expect(JSON.parse(branchContent.text)).toEqual({
+          id: "AG-001",
+          name: "Agência Centro (fictícia)",
+          city: "Rio de Janeiro",
+          hours: "Seg–Sex, 10h–16h (simulado)",
+        });
+        expect(JSON.parse(ticketContent.text)).toEqual({
+          id: "CH-001",
+          subject: "Consulta de horário de agência (simulado)",
+          status: "open",
+        });
       } finally {
         await tickets.close();
       }

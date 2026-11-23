@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { approveTool } from "./approve-tool.js";
 import { RegistrySchema } from "./registry-schema.js";
 import { createToolFingerprint } from "./tool-fingerprint.js";
 import { checkToolDefinition } from "./check-tool-definition.js";
@@ -48,6 +49,25 @@ describe("Verificação de definições MCP", () => {
 
     expect(
       checkToolDefinition(registry, "branches", currentTool),
+    ).toBe("definition_unchanged");
+  });
+
+  it("exige nova aprovação quando o responsável pela ferramenta muda", () => {
+    const registry = createApprovedRegistry();
+    registry.servers[0]!.tools[0]!.owner = "team-operations";
+
+    expect(
+      checkToolDefinition(registry, "branches", currentTool),
+    ).toBe("approval_record_inconsistent");
+
+    const reapproved = approveTool(
+      registry,
+      "branches",
+      currentTool,
+      "team-operations",
+    );
+    expect(
+      checkToolDefinition(reapproved, "branches", currentTool),
     ).toBe("definition_unchanged");
   });
 

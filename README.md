@@ -63,21 +63,35 @@ No navegador, conecte-se ao servidor, abra a aba **Tools** e experimente as cham
 | --- | --- |
 | `npm run dev` | Exibe o estado do bootstrap e encerra |
 | `npm run mcp:branches` | Inicia o servidor de agências e aguarda um cliente via `stdio` |
+| `npm run mcp:tickets` | Inicia o servidor de chamados via `stdio` |
+| `npm run mcp:demo` | Consulta agências e chamados em dois servidores locais |
+| `npm run registry:validate` | Valida `registry.json` e mostra a contagem de servidores e ferramentas |
+| `npm run registry:fingerprints` | Descobre as ferramentas dos dois servidores e imprime seus fingerprints |
+| `npm run registry:approve-live` | Exibe a definição de `branches:get_branch` e pede confirmação antes de registrar a aprovação |
+| `npm run registry:verify-live` | Compara `branches:get_branch` com a aprovação registrada e retorna erro se estiver inelegível |
 | `npm run typecheck` | Verifica os tipos TypeScript |
-| `npm test` | Executa os testes do catálogo e do bootstrap com Vitest |
+| `npm test` | Executa os testes de domínio, Registry e integração MCP com Vitest |
 
 ## Arquitetura atual
 
 ```mermaid
 flowchart LR
-  Client["Cliente MCP / Inspector"] <-->|stdio| Transport["Transporte stdio"]
-  Transport <--> Server["Servidor de agências · SDK MCP v2 + Zod"]
-  Server --> Domain["Catálogo fictício em memória"]
+  Client["Cliente MCP / Inspector"] <-->|stdio| Servers["Servidores de agências e chamados"]
+  Servers --> Domain["Catálogos fictícios em memória"]
+  Commands["Comandos do Registry"] --> Client
+  Commands --> Registry["registry.json"]
 ```
 
-- [Transporte `stdio`](src/mcp/branches-stdio.ts) mantém as mensagens do protocolo em `stdout` e os diagnósticos em `stderr`.
-- [Servidor MCP](src/mcp/branches-server.ts) registra as três ferramentas e valida os argumentos com Zod.
-- [Domínio de agências](src/domain/branches.ts) concentra as consultas ao catálogo em memória e é independente do MCP.
+- `src/domain/` mantém as consultas aos catálogos em memória. [Agências](src/domain/branches.ts) · [Chamados](src/domain/tickets.ts)
+- `src/mcp/` registra as ferramentas com Zod e reserva `stdout` para o protocolo `stdio`. [Servidores MCP](src/mcp)
+- `src/client/` conecta os servidores locais e demonstra chamadas diretas. [Demonstração](src/client/demo.ts)
+- `src/registry/` concentra o schema, a elegibilidade e a persistência. Os executáveis ficam em `src/registry/commands/`. [Registry](src/registry)
+
+### Aprovação no Registry local
+
+`registry:approve-live` mostra a definição e pede que você digite `APROVAR`. O responsável padrão é `team-branches`. Para seguir uma troca de responsável já registrada no arquivo, passe a equipe atual com `npm run registry:approve-live -- team-operations`. `approvedBy` registra a equipe declarada no CLI, e o fingerprint identifica a definição anunciada pelo servidor.
+
+Revise as alterações em `registry.json` pelo Git. Se uma interrupção deixar `registry.json.lock`, remova esse arquivo somente após confirmar que nenhuma aprovação está em execução.
 
 <a id="trilha-de-implementacao"></a>
 
@@ -87,12 +101,12 @@ flowchart LR
 | --- | --- | --- |
 | 1 · Fundamentos e ambiente | Bootstrap, TypeScript e testes | Implementada |
 | 2 · Primeiro servidor MCP | Catálogo de agências, ferramentas com Zod e transporte `stdio` | Implementada |
-| 3 · Cliente e segundo servidor | Conectar uma aplicação TypeScript aos servidores de agências e de chamados fictícios, com um cliente MCP por servidor | Próxima etapa |
-| 4 · Registry | Cadastrar ferramentas e exigir aprovação explícita para habilitá-las | Planejada |
+| 3 · Cliente e segundo servidor | Conectar uma aplicação TypeScript aos servidores de agências e de chamados fictícios, com um cliente MCP por servidor | Implementada |
+| 4 · Registry | Cadastrar ferramentas, registrar aprovações e verificar a elegibilidade de definições | Implementada |
 | 5 · Proxy Gateway | Encaminhar chamadas ao servidor certo e negar acesso por padrão | Planejada |
 | 6 em diante · Descoberta e governança | Descoberta incremental inspirada no Omni MCP, auditoria, mascaramento de dados, limites de chamadas e aprovação humana para operações simuladas | Planejada |
 
-Nesta etapa, você já pode se conectar diretamente ao servidor de agências.
+O Inspector e a demonstração acessam diretamente os servidores locais. O proxy aplicará a política do Registry à listagem e à execução de ferramentas.
 
 ## Licença
 

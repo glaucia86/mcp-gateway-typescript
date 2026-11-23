@@ -9,6 +9,9 @@ build/
 coverage/
 *.tsbuildinfo
 
+# Temporary Registry approval file
+/registry.json.lock
+
 # Local environment variables
 .env
 .env.*
