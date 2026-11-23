@@ -3,6 +3,29 @@ import * as z from "zod/v4";
 
 const OwnerSchema = z.string().trim().min(1);
 
+const ToolDefinitionShape = z
+  .object({
+    name: z.string().min(1),
+    inputSchema: z.record(z.string(), z.json()),
+  })
+  .catchall(z.json());
+
+export type ToolDefinition = z.infer<typeof ToolDefinitionShape>;
+
+// Validate without replacing fields that the fingerprint must cover.
+export const ToolDefinitionSchema = z.custom<ToolDefinition>()
+  .transform((definition, ctx) => {
+    const result = ToolDefinitionShape.safeParse(definition);
+    if (!result.success) {
+      for (const issue of result.error.issues) {
+        ctx.addIssue({ ...issue });
+      }
+      return z.NEVER;
+    }
+
+    return definition;
+  });
+
 const ToolSchema = z
   .strictObject({
     name: z.string().regex(/^[a-z][a-z0-9_]*$/),
@@ -19,9 +42,7 @@ const ToolSchema = z
       .regex(/^[a-f0-9]{64}$/)
       .nullable(),
 
-    approvedDefinition: z
-      .record(z.string(), z.unknown())
-      .nullable(),
+    approvedDefinition: ToolDefinitionSchema.nullable(),
   })
   .refine(
     (tool) => {
@@ -40,6 +61,15 @@ const ToolSchema = z
       error:
         "Ferramenta habilitada exige metadados de aprovação completos.",
       path: ["enabled"],
+    },
+  )
+  .refine(
+    (tool) =>
+      tool.approvedDefinition === null ||
+      tool.approvedDefinition.name === tool.name,
+    {
+      error: "O nome da definição aprovada deve corresponder ao da ferramenta.",
+      path: ["approvedDefinition", "name"],
     },
   );
 

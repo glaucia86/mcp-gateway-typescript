@@ -7,6 +7,7 @@ import { approveTool } from "./approve-tool.js";
 const discoveredTool = {
   name: "get_branch",
   description: "Consulta uma agência fictícia.",
+  annotations: { readOnlyHint: true },
   inputSchema: {
     type: "object",
     properties: {

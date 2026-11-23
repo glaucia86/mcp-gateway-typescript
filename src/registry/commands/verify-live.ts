@@ -1,51 +1,38 @@
-import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 
-import { connectLocalServer } from "../client/connect-local-server.js";
-
-import { RegistrySchema } from "./registry-schema.js";
-import { createToolFingerprint } from "./tool-fingerprint.js";
-import { checkToolDefinition } from "./check-tool-definition.js";
+import { connectLocalServer } from "../../client/connect-local-server.js";
+import { checkToolDefinition } from "../check-tool-definition.js";
+import { readRegistry } from "../registry-file.js";
+import { ToolDefinitionSchema } from "../registry-schema.js";
+import { createToolFingerprint } from "../tool-fingerprint.js";
 
 async function main(): Promise<void> {
-  // 1. Carregar o Registry salvo em disco
-  const content = await readFile(
-    resolve("registry.json"),
-    "utf8",
-  );
+  const { registry } = await readRegistry(resolve("registry.json"));
 
-  const rawData: unknown = JSON.parse(
-    content.replace(/^\uFEFF/, ""),
-  );
-
-  const registry = RegistrySchema.parse(rawData);
-
-  // 2. Conectar ao MCP Server real
   const client = await connectLocalServer(
     "src/mcp/branches-stdio.ts",
     "registry-verification-client",
   );
 
   try {
-    // 3. Descobrir a definição atual
     const { tools } = await client.listTools();
 
-    const currentTool = tools.find(
+    const discoveredTool = tools.find(
       (tool) => tool.name === "get_branch",
     );
 
-    if (!currentTool) {
+    if (!discoveredTool) {
       throw new Error(
         "A ferramenta get_branch não foi encontrada.",
       );
     }
 
-    // 4. Recuperar a aprovação armazenada
+    const currentTool = ToolDefinitionSchema.parse(discoveredTool);
+
     const approvedTool = registry.servers
       .find((server) => server.id === "branches")
       ?.tools.find((tool) => tool.name === "get_branch");
 
-    // 5. Verificar a elegibilidade
     const status = checkToolDefinition(
       registry,
       "branches",
@@ -73,7 +60,6 @@ async function main(): Promise<void> {
       process.exitCode = 1;
     }
   } finally {
-    // 6. Encerrar a conexão MCP
     await client.close();
   }
 }

@@ -1,11 +1,11 @@
 import {
   connectLocalServer,
   type LocalServerScript,
-} from "../client/connect-local-server.js";
+} from "../../client/connect-local-server.js";
 
-import { createToolFingerprint } from "./tool-fingerprint.js";
+import { ToolDefinitionSchema } from "../registry-schema.js";
+import { createToolFingerprint } from "../tool-fingerprint.js";
 
-// Servidores MCP que vamos consultar.
 type DiscoveryServer = {
   id: string;
   script: LocalServerScript;
@@ -31,7 +31,8 @@ async function discoverServerFingerprints(server: DiscoveryServer): Promise<void
   try {
     const response = await client.listTools();
 
-    for (const tool of response.tools) {
+    for (const definition of response.tools) {
+      const tool = ToolDefinitionSchema.parse(definition);
       const fingerprint = createToolFingerprint(tool);
       console.log(`${server.id}:${tool.name}`);
       console.log(`  SHA-256: ${fingerprint}`);
@@ -41,11 +42,10 @@ async function discoverServerFingerprints(server: DiscoveryServer): Promise<void
   }
 }
 
-function main(): Promise<void> {
-  return servers.reduce(async (previous, server) => {
-    await previous;
+async function main(): Promise<void> {
+  for (const server of servers) {
     await discoverServerFingerprints(server);
-  }, Promise.resolve());
+  }
 }
 
 try {

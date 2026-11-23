@@ -55,6 +55,49 @@ describe("Registry - regras de consistência", () => {
     }
   });
 
+  it.each([
+    { label: "sem nome", definition: { inputSchema: {} }, path: ["name"] },
+    {
+      label: "sem schema de entrada",
+      definition: { name: "get_branch" },
+      path: ["inputSchema"],
+    },
+    {
+      label: "com schema de entrada em lista",
+      definition: { name: "get_branch", inputSchema: [] },
+      path: ["inputSchema"],
+    },
+    {
+      label: "com nome de outra ferramenta",
+      definition: { name: "list_branches", inputSchema: {} },
+      path: ["name"],
+    },
+  ])("rejeita aprovação $label", ({ definition, path }) => {
+    const registry = createTestRegistry(true);
+    const server = registry.servers[0]!;
+    const record = {
+      ...server.tools[0]!,
+      approvedBy: "team-branches",
+      approvedAt: "2026-11-23T12:00:00Z",
+      approvedHash: "a".repeat(64),
+      approvedDefinition: definition,
+    };
+
+    const result = RegistrySchema.safeParse({
+      ...registry,
+      servers: [{ ...server, tools: [record] }],
+    });
+
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues).toContainEqual(
+        expect.objectContaining({
+          path: ["servers", 0, "tools", 0, "approvedDefinition", ...path],
+        }),
+      );
+    }
+  });
+
   it("rejeita IDs duplicados de servidores", () => {
     const registry = createTestRegistry(false);
 

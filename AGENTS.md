@@ -2,16 +2,19 @@
 
 ## Project Structure & Module Organization
 
-This repository is an early-stage TypeScript MCP gateway with a fictional bank-branch server.
+This repository is an early-stage TypeScript MCP gateway with fictional bank-branch and support-ticket servers.
 
 - `src/index.ts` and `src/status.ts`: gateway bootstrap and status reporting.
-- `src/domain/branches.ts`: in-memory branch catalog and domain functions.
-- `src/mcp/branches-server.ts`: MCP tool registration and input schemas.
-- `src/mcp/branches-stdio.ts`: stdio transport entry point.
+- `src/domain/`: in-memory catalogs and business logic.
+- `src/mcp/`: tool registration, input schemas, and stdio entry points.
+- `src/client/`: connections to local MCP servers and a client demo.
+- `src/registry/`: Registry schema, tool approval, eligibility, and fingerprints.
+- `src/registry/registry-file.ts`: Registry file validation and persistence.
+- `src/registry/commands/`: executable Registry commands.
 - Tests live beside source files as `*.test.ts`.
 - `.agents/skills/`: repository-local agent guidance; `skills-lock.json` records installed skills.
 
-Keep domain logic independent of MCP transport and tool registration. No application assets directory currently exists.
+Keep domain logic independent of MCP transport and tool registration. Keep Registry policy in the Registry modules and command orchestration in `commands/`.
 
 ## Build, Test, and Development Commands
 
@@ -20,6 +23,12 @@ Run commands from the repository root:
 - `npm ci`: install dependencies from `package-lock.json`.
 - `npm run dev`: execute the gateway bootstrap using `tsx`; this is not a watch command.
 - `npm run mcp:branches`: start the branch MCP server over stdio.
+- `npm run mcp:tickets`: start the support-ticket MCP server over stdio.
+- `npm run mcp:demo`: query both local MCP servers.
+- `npm run registry:validate`: check the Registry file and report schema issues.
+- `npm run registry:fingerprints`: discover and fingerprint tools from both servers.
+- `npm run registry:approve-live`: review and record the approval for `branches:get_branch`.
+- `npm run registry:verify-live`: check whether the live definition matches its approval.
 - `npm run typecheck`: check TypeScript without emitting JavaScript.
 - `npm test`: run the Vitest suite once.
 - `npm test -- src/domain/branches.test.ts`: run a focused test file.
@@ -32,7 +41,7 @@ Follow `.editorconfig`: two-space indentation, UTF-8, and CRLF line endings. Mat
 
 Use strict TypeScript and ESM with NodeNext resolution. Include `.js` extensions in relative imports and use `import type` for type-only imports. Use camelCase for functions and variables, PascalCase for types, kebab-case for multiword filenames, and snake_case for MCP tool names.
 
-Validate external inputs with Zod at MCP boundaries. Prefer schema-derived types and narrowing over `any` or unchecked assertions.
+Validate external inputs with Zod at the MCP and Registry file boundaries. Prefer schema-derived types and narrowing over `any` or unchecked assertions.
 
 ## Testing Guidelines
 
