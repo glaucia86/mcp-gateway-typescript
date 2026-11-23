@@ -1,0 +1,70 @@
+
+{
+  "version": 1,
+  "servers": [
+    {
+      "id": "branches",
+      "owner": "team-branches",
+      "enabled": false,
+      "tools": [
+        {
+          "name": "list_branches",
+          "owner": "team-branches",
+          "riskLevel": 0,
+          "enabled": false,
+          "approvedBy": null,
+          "approvedAt": null,
+          "approvedHash": null,
+          "approvedDefinition": null
+        },
+        {
+          "name": "get_branch",
+          "owner": "team-branches",
+          "riskLevel": 0,
+          "enabled": false,
+          "approvedBy": null,
+          "approvedAt": null,
+          "approvedHash": null,
+          "approvedDefinition": null
+        },
+        {
+          "name": "list_cities",
+          "owner": "team-branches",
+          "riskLevel": 0,
+          "enabled": false,
+          "approvedBy": null,
+          "approvedAt": null,
+          "approvedHash": null,
+          "approvedDefinition": null
+        }
+      ]
+    },
+    {
+      "id": "tickets",
+      "owner": "team-tickets",
+      "enabled": false,
+      "tools": [
+        {
+          "name": "list_tickets",
+          "owner": "team-tickets",
+          "riskLevel": 1,
+          "enabled": false,
+          "approvedBy": null,
+          "approvedAt": null,
+          "approvedHash": null,
+          "approvedDefinition": null
+        },
+        {
+          "name": "get_ticket",
+          "owner": "team-tickets",
+          "riskLevel": 1,
+          "enabled": false,
+          "approvedBy": null,
+          "approvedAt": null,
+          "approvedHash": null,
+          "approvedDefinition": null
+        }
+      ]
+    }
+  ]
+}

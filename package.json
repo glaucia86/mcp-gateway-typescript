@@ -9,7 +9,9 @@
     "typecheck": "tsc --noEmit",
     "mcp:branches": "tsx src/mcp/branches-stdio.ts",
     "mcp:tickets": "tsx src/mcp/tickets-stdio.ts",
-    "mcp:demo": "tsx src/client/demo.ts"
+    "mcp:demo": "tsx src/client/demo.ts",
+    "registry": "tsx src/registry/cli.ts",
+    "registry:validate": "tsx src/registry/validate-registry.ts"
   },
   "repository": {
     "type": "git",
